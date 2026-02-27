@@ -1,10 +1,26 @@
-- title: "Introduction"
-  file: "01-introduction"
+- title: "Fonctions d'agrégation"
+  file: "01-fonctions-agregation"
 
-- title: "Installation"
-  file: "02-installation"
-  requires: "01-introduction" # optionnel : prérequis (file d'une étape précédente)
+- title: "GROUP BY"
+  file: "02-group-by"
+  requires: "01-fonctions-agregation"
 
-- title: "Premier projet"
-  file: "03-premier-projet"
-  requires: "02-installation"
+- title: "HAVING"
+  file: "03-having"
+  requires: "02-group-by"
+
+- title: "INNER JOIN"
+  file: "04-inner-join"
+  requires: "03-having"
+
+- title: "LEFT JOIN et NULL"
+  file: "05-left-join-et-null"
+  requires: "04-inner-join"
+
+- title: "Les alias (AS)"
+  file: "06-alias"
+  requires: "05-left-join-et-null"
+
+- title: "Mini-projet"
+  file: "07-mini-projet"
+  requires: "06-alias"
