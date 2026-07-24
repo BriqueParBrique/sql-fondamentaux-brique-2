@@ -12,6 +12,40 @@ Avec `INNER JOIN`, si une ligne n'a pas de correspondance dans l'autre table, el
 
 `LEFT JOIN` garde **toutes les lignes de la table de gauche** (celle après `FROM`), même si elles n'ont pas de correspondance dans la table de droite (celle après `JOIN`).
 
+### Le cas de Marguerite Duras
+
+Souviens-toi de l'étape précédente : avec `INNER JOIN`, Marguerite Duras
+disparaissait du résultat parce qu'elle n'a aucun livre au catalogue. Comparons
+les deux jointures sur le même exemple.
+
+```sql
+-- INNER JOIN : 12 lignes, une par livre. Marguerite Duras est absente.
+SELECT auteurs.nom, livres.titre
+FROM auteurs
+INNER JOIN livres ON auteurs.id = livres.auteur_id;
+```
+
+```sql
+-- LEFT JOIN : 13 lignes. La 13ᵉ est celle de Marguerite Duras, avec NULL
+-- comme titre.
+SELECT auteurs.nom, livres.titre
+FROM auteurs
+LEFT JOIN livres ON auteurs.id = livres.auteur_id;
+```
+
+| nom      | titre               |
+| -------- | ------------------- |
+| Hugo     | Les Misérables      |
+| Hugo     | Notre-Dame de Paris |
+| …        | …                   |
+| Christie | Dix Petits Nègres   |
+| Duras    | NULL                |
+
+C'est toute la différence : `LEFT JOIN` conserve la ligne de gauche même sans
+correspondance, et remplit les colonnes de droite avec `NULL`.
+
+### Un autre exemple : les livres jamais empruntés
+
 ```sql
 -- Tous les livres, avec leur emprunt s'il existe
 SELECT livres.titre, emprunts.emprunteur, emprunts.date_emprunt
@@ -72,6 +106,44 @@ INNER JOIN livres ON emprunts.livre_id = livres.id
 WHERE emprunts.date_retour IS NULL;
 ```
 
+### Compter après un LEFT JOIN : `COUNT(*)` est un piège
+
+C'est le moment où la distinction vue à l'étape 1 devient indispensable.
+Comptons les livres de chaque auteur :
+
+```sql
+-- ❌ Faux : Marguerite Duras est créditée d'un livre
+SELECT auteurs.nom, COUNT(*)
+FROM auteurs
+LEFT JOIN livres ON auteurs.id = livres.auteur_id
+GROUP BY auteurs.id, auteurs.nom;
+```
+
+| nom      | COUNT(\*) |
+| -------- | --------- |
+| …        | …         |
+| Duras    | **1**     |
+
+Pourquoi 1 ? Parce que le `LEFT JOIN` a bien produit **une ligne** pour
+Marguerite Duras — une ligne dont les colonnes de `livres` sont vides. Et
+`COUNT(*)` compte les lignes, pas les livres.
+
+La correction consiste à compter une colonne qui vient de la table de droite :
+
+```sql
+-- ✓ Correct : Marguerite Duras est créditée de 0 livre
+SELECT auteurs.nom, COUNT(livres.id)
+FROM auteurs
+LEFT JOIN livres ON auteurs.id = livres.auteur_id
+GROUP BY auteurs.id, auteurs.nom;
+```
+
+`COUNT(livres.id)` ignore les valeurs vides : sur la ligne de Marguerite Duras,
+`livres.id` est `NULL`, donc rien n'est compté, et on obtient bien **0**.
+
+> **La règle** : après un `LEFT JOIN`, compte toujours une colonne de la table de
+> droite (`COUNT(livres.id)`), jamais `COUNT(*)`.
+
 ### INNER JOIN vs LEFT JOIN : résumé
 
 | | INNER JOIN | LEFT JOIN |
@@ -81,17 +153,22 @@ WHERE emprunts.date_retour IS NULL;
 
 ### Exercice
 
-1. Affiche tous les auteurs avec le nombre de livres qu'ils ont écrits (même les auteurs sans livre)
-2. Quels livres n'ont jamais été empruntés ?
-3. Affiche tous les emprunts en cours (date_retour IS NULL) avec le titre du livre
-4. Affiche tous les livres avec le nombre de fois qu'ils ont été empruntés (0 si jamais empruntés)
-5. Quels emprunteurs ont des livres non rendus ?
+Le nombre de lignes attendu est indiqué entre parenthèses.
+
+1. Affiche tous les auteurs avec le nombre de livres qu'ils ont écrits, **y
+   compris ceux qui n'en ont aucun** *(6 lignes, dont une à 0)*
+2. Quels livres n'ont jamais été empruntés ? *(5 lignes)*
+3. Affiche tous les emprunts en cours (date_retour IS NULL) avec le titre du livre *(3 lignes)*
+4. Affiche tous les livres avec le nombre de fois qu'ils ont été empruntés (0 si jamais empruntés) *(12 lignes)*
+5. Quels emprunteurs ont des livres non rendus ? *(3 lignes)*
 
 <details>
 <summary>Voir les réponses</summary>
 
 ```sql
--- 1. Auteurs avec nombre de livres
+-- 1. Auteurs avec nombre de livres.
+--    LEFT JOIN pour garder Marguerite Duras, et COUNT(livres.id) — pas
+--    COUNT(*) — pour qu'elle soit bien créditée de 0 et non de 1.
 SELECT auteurs.nom, auteurs.prenom, COUNT(livres.id)
 FROM auteurs
 LEFT JOIN livres ON auteurs.id = livres.auteur_id

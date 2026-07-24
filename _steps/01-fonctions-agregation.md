@@ -36,12 +36,16 @@ CREATE TABLE emprunts (
     date_retour TEXT
 );
 
+-- Note : Marguerite Duras est enregistrée comme autrice, mais aucun de ses
+-- livres n'est encore au catalogue. C'est volontaire : ce cas nous servira à
+-- l'étape 5 pour comprendre la différence entre INNER JOIN et LEFT JOIN.
 INSERT INTO auteurs VALUES
 (1, 'Hugo', 'Victor', 'Française'),
 (2, 'Rowling', 'J.K.', 'Britannique'),
 (3, 'Murakami', 'Haruki', 'Japonaise'),
 (4, 'Camus', 'Albert', 'Française'),
-(5, 'Christie', 'Agatha', 'Britannique');
+(5, 'Christie', 'Agatha', 'Britannique'),
+(6, 'Duras', 'Marguerite', 'Française');
 
 INSERT INTO livres VALUES
 (1, 'Les Misérables', 1, 'Roman', 1488, 12.50, 1862),
@@ -84,6 +88,45 @@ Résultat : **12**
 SELECT COUNT(*) FROM livres WHERE pages > 500;
 ```
 
+#### `COUNT(*)` ou `COUNT(colonne)` ?
+
+Les deux existent et ne comptent pas la même chose :
+
+| Écriture          | Ce qui est compté                                            |
+| ----------------- | ------------------------------------------------------------ |
+| `COUNT(*)`        | Toutes les lignes                                            |
+| `COUNT(colonne)`  | Les lignes où **cette colonne a une valeur** (non vide)       |
+| `COUNT(DISTINCT colonne)` | Les valeurs **différentes** de cette colonne         |
+
+Sur notre table `livres`, toutes les colonnes sont remplies, donc `COUNT(*)` et
+`COUNT(prix)` donnent le même résultat : 12. Mais sur la table `emprunts`, la
+colonne `date_retour` est vide pour les livres non encore rendus :
+
+```sql
+SELECT
+    COUNT(*),            -- 8 : tous les emprunts
+    COUNT(date_retour)   -- 5 : seulement ceux qui ont été rendus
+FROM emprunts;
+```
+
+Cette différence est un outil, pas un piège : `COUNT(date_retour)` est la façon
+la plus courte de compter les emprunts terminés.
+
+Et pour compter les valeurs distinctes :
+
+```sql
+-- Combien de genres différents ? (et non : combien de livres)
+SELECT COUNT(DISTINCT genre) FROM livres;
+```
+
+#### Les agrégations ignorent les valeurs vides
+
+`SUM`, `AVG`, `MIN` et `MAX` **sautent** les cases vides au lieu de les compter
+comme des zéros. C'est presque toujours ce qu'on veut — une moyenne calculée sur
+les valeurs connues est plus juste qu'une moyenne où les inconnues valent 0 —
+mais il faut le savoir : `AVG` divise par le nombre de valeurs *présentes*, pas
+par le nombre de lignes. On reparle des valeurs vides à l'étape 5.
+
 ### SUM — Additionner
 
 `SUM` calcule la somme d'une colonne numérique :
@@ -103,12 +146,59 @@ SELECT AVG(prix) FROM livres;
 ### MIN et MAX — Trouver les extrêmes
 
 ```sql
--- Quel est le livre le moins cher ?
+-- Quel est le prix le plus bas du catalogue ?
 SELECT MIN(prix) FROM livres;
 
--- Quel est le livre le plus long (en pages) ?
+-- Quel est le nombre de pages le plus élevé ?
 SELECT MAX(pages) FROM livres;
 ```
+
+### Le piège classique : « quel livre ? » ≠ « quel prix ? »
+
+Relis bien les deux requêtes ci-dessus : elles répondent à *« quel prix ? »* et
+*« combien de pages ? »*. Elles ne disent **pas** de quel livre il s'agit.
+
+```sql
+SELECT MIN(prix) FROM livres;
+```
+
+Résultat : une seule cellule, `6.9`. Pas de titre, pas d'auteur — juste le
+nombre.
+
+Et il est tentant d'écrire ceci pour obtenir le titre :
+
+```sql
+-- ❌ N'écris pas ça : le résultat est trompeur
+SELECT titre, MIN(prix) FROM livres;
+```
+
+SQLite accepte cette requête, mais **d'autres bases la refusent**, et surtout la
+logique est douteuse : on demande une valeur unique (`MIN(prix)`) à côté d'une
+colonne qui a 12 valeurs différentes (`titre`). Rien ne garantit que le titre
+affiché soit celui du livre le moins cher.
+
+Pour obtenir **la ligne** et pas seulement la valeur, on utilise ce qu'on sait
+déjà du niveau 1 — trier et prendre le premier :
+
+```sql
+-- ✓ Le livre le moins cher, avec son titre
+SELECT titre, prix FROM livres
+ORDER BY prix
+LIMIT 1;
+```
+
+| titre       | prix |
+| ----------- | ---- |
+| L'Étranger  | 6.9  |
+
+> **Retiens la distinction** : une fonction d'agrégation répond à une question
+> *chiffrée* (« combien ? », « quelle moyenne ? », « quel maximum ? »). Pour
+> savoir *quelle ligne* porte ce chiffre, il faut trier (`ORDER BY … LIMIT 1`)
+> ou, comme on le verra au niveau 3, écrire une sous-requête.
+>
+> Et comme au niveau 1 : s'il y a des ex æquo, `LIMIT 1` en choisit un
+> arbitrairement. Deux livres sont à 7.50 dans notre table — un `ORDER BY prix,
+> titre` rendrait le résultat reproductible.
 
 ### Combiner avec WHERE
 
@@ -121,11 +211,16 @@ SELECT AVG(prix) FROM livres WHERE genre = 'Fantasy';
 
 ### Exercice
 
-1. Combien d'auteurs sont dans la base ?
-2. Combien de livres ont été publiés après 1990 ?
-3. Quel est le nombre total de pages de tous les livres ?
-4. Quel est le prix moyen des livres de genre "Roman" ?
-5. Quelle est l'année de publication du livre le plus ancien ?
+Le résultat attendu est indiqué entre parenthèses.
+
+1. Combien d'auteurs sont dans la base ? *(6)*
+2. Combien de livres ont été publiés après 1990 ? *(5)*
+3. Quel est le nombre total de pages de tous les livres ? *(6666)*
+4. Quel est le prix moyen des livres de genre "Roman" ? *(environ 10.95)*
+5. Quelle est l'année de publication la plus ancienne ? *(1831)*
+6. Combien de genres différents le catalogue contient-il ? *(4)*
+7. Combien d'emprunts n'ont pas encore été rendus ? *(3 — indice : `COUNT(*)` moins `COUNT(date_retour)`, ou bien la condition vue à l'étape 5)*
+8. Affiche le titre et le nombre de pages du livre le plus long *(1 ligne — attention, `MAX(pages)` seul ne suffit pas)*
 
 <details>
 <summary>Voir les réponses</summary>
@@ -143,8 +238,20 @@ SELECT SUM(pages) FROM livres;
 -- 4. Prix moyen des Romans
 SELECT AVG(prix) FROM livres WHERE genre = 'Roman';
 
--- 5. Livre le plus ancien
+-- 5. Année de publication la plus ancienne
 SELECT MIN(annee_publication) FROM livres;
+
+-- 6. Nombre de genres différents
+SELECT COUNT(DISTINCT genre) FROM livres;
+
+-- 7. Emprunts non rendus : total moins ceux qui ont une date de retour
+SELECT COUNT(*) - COUNT(date_retour) FROM emprunts;
+
+-- 8. Le livre le plus long, avec son titre.
+--    MAX(pages) donnerait le nombre (1488) mais pas le titre : il faut trier.
+SELECT titre, pages FROM livres
+ORDER BY pages DESC
+LIMIT 1;
 ```
 
 </details>

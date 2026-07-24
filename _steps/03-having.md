@@ -83,11 +83,13 @@ LIMIT nombre;
 
 ### Exercice
 
-1. Affiche les genres qui contiennent exactement 2 livres
-2. Affiche les auteurs (auteur_id) qui ont écrit des livres totalisant plus de 500 pages
-3. Affiche les emprunteurs qui ont emprunté plus d'un livre
-4. Affiche les genres dont le prix moyen est inférieur à 9€, pour les livres publiés après 1900
-5. Affiche les genres ayant au moins 2 livres, triés par prix moyen décroissant
+Le nombre de lignes attendu est indiqué entre parenthèses.
+
+1. Affiche les genres qui contiennent exactement 2 livres *(1 ligne)*
+2. Affiche les auteurs (auteur_id) qui ont écrit des livres totalisant plus de 500 pages *(4 lignes)*
+3. Affiche les emprunteurs qui ont emprunté plus d'un livre *(3 lignes)*
+4. Affiche les genres dont le prix moyen est inférieur à 9€, pour les livres publiés après 1900 *(2 lignes)*
+5. Affiche les genres ayant au moins 2 livres, triés par prix moyen décroissant *(3 lignes)*
 
 <details>
 <summary>Voir les réponses</summary>

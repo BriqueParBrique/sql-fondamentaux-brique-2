@@ -92,17 +92,24 @@ ORDER BY COUNT(*) DESC;
 
 ### Exercice
 
-1. Affiche le nombre de livres par nationalité d'auteur (indice : tu n'as pas encore vu les JOIN, utilise `auteur_id` pour le moment)
-2. Affiche le prix minimum et maximum par genre
-3. Affiche le nombre de pages moyen par genre, trié du plus grand au plus petit
-4. Combien d'emprunts a fait chaque emprunteur ?
-5. Affiche le nombre de livres publiés par décennie (indice : utilise `annee_publication / 10 * 10`)
+Le nombre de lignes attendu est indiqué entre parenthèses.
+
+1. Affiche le nombre de livres par auteur, identifié par son `auteur_id`
+   *(5 lignes — on croisera avec les noms à l'étape 4, avec les JOIN)*
+2. Affiche le prix minimum et maximum par genre *(4 lignes)*
+3. Affiche le nombre de pages moyen par genre, trié du plus grand au plus petit *(4 lignes)*
+4. Combien d'emprunts a fait chaque emprunteur ? *(5 lignes)*
+5. Affiche le nombre de livres publiés par décennie (indice : utilise `annee_publication / 10 * 10`) *(7 lignes)*
 
 <details>
 <summary>Voir les réponses</summary>
 
 ```sql
--- 1. Nombre de livres par auteur_id
+-- 1. Nombre de livres par auteur_id.
+--    Cinq lignes seulement, alors que la table `auteurs` en compte six :
+--    Marguerite Duras n'a aucun livre, donc aucune ligne de `livres` ne la
+--    mentionne, donc aucun groupe ne lui correspond. On corrigera ça à
+--    l'étape 5 avec LEFT JOIN.
 SELECT auteur_id, COUNT(*) FROM livres
 GROUP BY auteur_id;
 
