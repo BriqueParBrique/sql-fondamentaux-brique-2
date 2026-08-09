@@ -43,7 +43,7 @@ auteur doit être compté même s'il n'a aucun livre.** *(3 lignes)*
 
 ### Solutions
 
-<details>
+<details markdown="1">
 <summary>Voir les solutions</summary>
 
 ```sql

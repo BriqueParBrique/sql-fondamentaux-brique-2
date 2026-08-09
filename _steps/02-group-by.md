@@ -101,7 +101,7 @@ Le nombre de lignes attendu est indiqué entre parenthèses.
 4. Combien d'emprunts a fait chaque emprunteur ? *(5 lignes)*
 5. Affiche le nombre de livres publiés par décennie (indice : utilise `annee_publication / 10 * 10`) *(7 lignes)*
 
-<details>
+<details markdown="1">
 <summary>Voir les réponses</summary>
 
 ```sql

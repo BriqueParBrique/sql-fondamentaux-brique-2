@@ -222,7 +222,7 @@ Le résultat attendu est indiqué entre parenthèses.
 7. Combien d'emprunts n'ont pas encore été rendus ? *(3 — indice : `COUNT(*)` moins `COUNT(date_retour)`, ou bien la condition vue à l'étape 5)*
 8. Affiche le titre et le nombre de pages du livre le plus long *(1 ligne — attention, `MAX(pages)` seul ne suffit pas)*
 
-<details>
+<details markdown="1">
 <summary>Voir les réponses</summary>
 
 ```sql

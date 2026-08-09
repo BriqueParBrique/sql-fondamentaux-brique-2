@@ -91,7 +91,7 @@ Le nombre de lignes attendu est indiqué entre parenthèses.
 4. Affiche les genres dont le prix moyen est inférieur à 9€, pour les livres publiés après 1900 *(2 lignes)*
 5. Affiche les genres ayant au moins 2 livres, triés par prix moyen décroissant *(3 lignes)*
 
-<details>
+<details markdown="1">
 <summary>Voir les réponses</summary>
 
 ```sql

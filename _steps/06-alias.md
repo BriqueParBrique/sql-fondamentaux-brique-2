@@ -192,7 +192,7 @@ Le nombre de lignes attendu est indiqué entre parenthèses.
 6. Affiche le nom complet de chaque auteur sur une seule colonne nommée `auteur`, au format « Prénom Nom » *(6 lignes)*
 7. Pour chaque genre, affiche le nombre de livres et le nombre de livres coûtant plus de 9 € *(4 lignes — indice : `SUM(CASE WHEN …)`)*
 
-<details>
+<details markdown="1">
 <summary>Voir les réponses</summary>
 
 ```sql
