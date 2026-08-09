@@ -120,7 +120,7 @@ Le nombre de lignes attendu est indiqué entre parenthèses.
 4. Affiche le titre du livre et le nom de l'emprunteur pour chaque emprunt (JOIN entre `emprunts` et `livres`) *(8 lignes)*
 5. Quel auteur a écrit le plus de pages au total ? Affiche son nom et le total *(1 ligne)*
 
-<details>
+<details markdown="1">
 <summary>Voir les réponses</summary>
 
 ```sql

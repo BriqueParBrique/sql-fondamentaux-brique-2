@@ -162,7 +162,7 @@ Le nombre de lignes attendu est indiqué entre parenthèses.
 4. Affiche tous les livres avec le nombre de fois qu'ils ont été empruntés (0 si jamais empruntés) *(12 lignes)*
 5. Quels emprunteurs ont des livres non rendus ? *(3 lignes)*
 
-<details>
+<details markdown="1">
 <summary>Voir les réponses</summary>
 
 ```sql
